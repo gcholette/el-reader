@@ -1,7 +1,28 @@
-@import url('https://fonts.googleapis.com/css?family=Roboto');
+@import url('https://fonts.googleapis.com/css?family=Ubuntu+Mono');
 body {
     background: rgb(12, 17, 22);
     color: rgb(216, 210, 213);
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Ubuntu Mono', monospace;
     font-size: 19px;
+}
+
+button {
+   border-radius: 1em; 
+   padding: 0.4em 0.8em 0.4em 0.8em;
+   border-radius: 1em;
+   border: 0px;
+   color: white;
+   font-size: 20px;
+}
+
+.post {
+    background: rgb(49, 49, 53); 
+    border-radius: 1.2em;
+    padding: 0.7em;
+    margin: 0.3em;
+}
+
+.btn-r {
+   background: rgb(218, 34, 111);
+   box-shadow: 0px 0px 10px rgb(218, 34, 111);
 }
