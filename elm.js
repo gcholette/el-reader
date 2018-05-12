@@ -6249,6 +6249,143 @@ var _elm_lang$core$Time$subMap = F2(
 	});
 _elm_lang$core$Native_Platform.effectManagers['Time'] = {pkg: 'elm-lang/core', init: _elm_lang$core$Time$init, onEffects: _elm_lang$core$Time$onEffects, onSelfMsg: _elm_lang$core$Time$onSelfMsg, tag: 'sub', subMap: _elm_lang$core$Time$subMap};
 
+//import Maybe, Native.List //
+
+var _elm_lang$core$Native_Regex = function() {
+
+function escape(str)
+{
+	return str.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+}
+function caseInsensitive(re)
+{
+	return new RegExp(re.source, 'gi');
+}
+function regex(raw)
+{
+	return new RegExp(raw, 'g');
+}
+
+function contains(re, string)
+{
+	return string.match(re) !== null;
+}
+
+function find(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var out = [];
+	var number = 0;
+	var string = str;
+	var lastIndex = re.lastIndex;
+	var prevLastIndex = -1;
+	var result;
+	while (number++ < n && (result = re.exec(string)))
+	{
+		if (prevLastIndex === re.lastIndex) break;
+		var i = result.length - 1;
+		var subs = new Array(i);
+		while (i > 0)
+		{
+			var submatch = result[i];
+			subs[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		out.push({
+			match: result[0],
+			submatches: _elm_lang$core$Native_List.fromArray(subs),
+			index: result.index,
+			number: number
+		});
+		prevLastIndex = re.lastIndex;
+	}
+	re.lastIndex = lastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+function replace(n, re, replacer, string)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	var count = 0;
+	function jsReplacer(match)
+	{
+		if (count++ >= n)
+		{
+			return match;
+		}
+		var i = arguments.length - 3;
+		var submatches = new Array(i);
+		while (i > 0)
+		{
+			var submatch = arguments[i];
+			submatches[--i] = submatch === undefined
+				? _elm_lang$core$Maybe$Nothing
+				: _elm_lang$core$Maybe$Just(submatch);
+		}
+		return replacer({
+			match: match,
+			submatches: _elm_lang$core$Native_List.fromArray(submatches),
+			index: arguments[arguments.length - 2],
+			number: count
+		});
+	}
+	return string.replace(re, jsReplacer);
+}
+
+function split(n, re, str)
+{
+	n = n.ctor === 'All' ? Infinity : n._0;
+	if (n === Infinity)
+	{
+		return _elm_lang$core$Native_List.fromArray(str.split(re));
+	}
+	var string = str;
+	var result;
+	var out = [];
+	var start = re.lastIndex;
+	var restoreLastIndex = re.lastIndex;
+	while (n--)
+	{
+		if (!(result = re.exec(string))) break;
+		out.push(string.slice(start, result.index));
+		start = re.lastIndex;
+	}
+	out.push(string.slice(start));
+	re.lastIndex = restoreLastIndex;
+	return _elm_lang$core$Native_List.fromArray(out);
+}
+
+return {
+	regex: regex,
+	caseInsensitive: caseInsensitive,
+	escape: escape,
+
+	contains: F2(contains),
+	find: F3(find),
+	replace: F4(replace),
+	split: F3(split)
+};
+
+}();
+
+var _elm_lang$core$Regex$split = _elm_lang$core$Native_Regex.split;
+var _elm_lang$core$Regex$replace = _elm_lang$core$Native_Regex.replace;
+var _elm_lang$core$Regex$find = _elm_lang$core$Native_Regex.find;
+var _elm_lang$core$Regex$contains = _elm_lang$core$Native_Regex.contains;
+var _elm_lang$core$Regex$caseInsensitive = _elm_lang$core$Native_Regex.caseInsensitive;
+var _elm_lang$core$Regex$regex = _elm_lang$core$Native_Regex.regex;
+var _elm_lang$core$Regex$escape = _elm_lang$core$Native_Regex.escape;
+var _elm_lang$core$Regex$Match = F4(
+	function (a, b, c, d) {
+		return {match: a, submatches: b, index: c, number: d};
+	});
+var _elm_lang$core$Regex$Regex = {ctor: 'Regex'};
+var _elm_lang$core$Regex$AtMost = function (a) {
+	return {ctor: 'AtMost', _0: a};
+};
+var _elm_lang$core$Regex$All = {ctor: 'All'};
+
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrap;
 var _elm_lang$virtual_dom$VirtualDom_Debug$wrapWithFlags;
 
@@ -9341,12 +9478,45 @@ var _lukewestby$elm_http_builder$HttpBuilder$RequestBuilder = F9(
 		return {method: a, headers: b, url: c, body: d, expect: e, timeout: f, withCredentials: g, queryParams: h, cacheBuster: i};
 	});
 
-var _user$project$Main$subscriptions = function (model) {
-	return _elm_lang$core$Platform_Sub$none;
-};
-var _user$project$Main$viewPost = function (_p0) {
+var _user$project$Post$viewMedia = function (_p0) {
 	var _p1 = _p0;
-	var _p2 = _p1.url;
+	var _p4 = _p1.url;
+	var extension = _elm_lang$core$List$head(
+		_elm_lang$core$List$reverse(
+			A2(_elm_lang$core$String$split, '.', _p4)));
+	var isImage = function () {
+		var _p2 = extension;
+		if (_p2.ctor === 'Just') {
+			return A2(
+				_elm_lang$core$Regex$contains,
+				_elm_lang$core$Regex$regex('(gif$)|(png)|(jpg)'),
+				_p2._0);
+		} else {
+			return false;
+		}
+	}();
+	var _p3 = isImage;
+	if (_p3 === true) {
+		return A2(
+			_elm_lang$html$Html$img,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$src(_p4),
+				_1: {
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$width(120),
+					_1: {ctor: '[]'}
+				}
+			},
+			{ctor: '[]'});
+	} else {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{ctor: '[]'});
+	}
+};
+var _user$project$Post$viewPost = function (post) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{
@@ -9356,18 +9526,7 @@ var _user$project$Main$viewPost = function (_p0) {
 		},
 		{
 			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$img,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$src(_p2),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$width(120),
-						_1: {ctor: '[]'}
-					}
-				},
-				{ctor: '[]'}),
+			_0: _user$project$Post$viewMedia(post),
 			_1: {
 				ctor: '::',
 				_0: A2(
@@ -9375,7 +9534,7 @@ var _user$project$Main$viewPost = function (_p0) {
 					{ctor: '[]'},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text(_p1.author),
+						_0: _elm_lang$html$Html$text(post.author),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -9385,7 +9544,7 @@ var _user$project$Main$viewPost = function (_p0) {
 						{ctor: '[]'},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text(_p1.title),
+							_0: _elm_lang$html$Html$text(post.title),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -9399,12 +9558,12 @@ var _user$project$Main$viewPost = function (_p0) {
 									_elm_lang$html$Html$a,
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$href(_p2),
+										_0: _elm_lang$html$Html_Attributes$href(post.url),
 										_1: {ctor: '[]'}
 									},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p2),
+										_0: _elm_lang$html$Html$text(post.url),
 										_1: {ctor: '[]'}
 									}),
 								_1: {ctor: '[]'}
@@ -9415,66 +9574,59 @@ var _user$project$Main$viewPost = function (_p0) {
 			}
 		});
 };
-var _user$project$Main$identity = function (x) {
+var _user$project$Post$identity = function (x) {
 	return x;
 };
-var _user$project$Main$Model = F2(
-	function (a, b) {
-		return {posts: a, log: b};
-	});
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: A2(
-		_user$project$Main$Model,
-		{ctor: '[]'},
-		'Initialised'),
-	_1: _elm_lang$core$Platform_Cmd$none
-};
-var _user$project$Main$SearchResponseBody = function (a) {
+var _user$project$Post$SearchResponseBody = function (a) {
 	return {posts: a};
 };
-var _user$project$Main$Post = F5(
+var _user$project$Post$Post = F5(
 	function (a, b, c, d, e) {
 		return {author: a, title: b, url: c, isVideo: d, media: e};
 	});
-var _user$project$Main$Media = F2(
+var _user$project$Post$Media = F2(
 	function (a, b) {
 		return {redditVideo: a, oembed: b};
 	});
-var _user$project$Main$RedditVideo = function (a) {
+var _user$project$Post$RedditVideo = function (a) {
 	return {dashUrl: a};
 };
-var _user$project$Main$decodeRedditVideo = A3(
+var _user$project$Post$decodeRedditVideo = A3(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
 	'dash_url',
 	_elm_lang$core$Json_Decode$string,
-	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$RedditVideo));
-var _user$project$Main$OEmbed = function (a) {
-	return {title: a};
-};
-var _user$project$Main$decodeOEmbed = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$RedditVideo));
+var _user$project$Post$OEmbed = F2(
+	function (a, b) {
+		return {title: a, thumbnail: b};
+	});
+var _user$project$Post$decodeOEmbed = A3(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-	'title',
+	'thumbnail_url',
 	_elm_lang$core$Json_Decode$string,
-	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$OEmbed));
-var _user$project$Main$decodeMedia = A4(
+	A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+		'title',
+		_elm_lang$core$Json_Decode$string,
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$OEmbed)));
+var _user$project$Post$decodeMedia = A4(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
 	'oembed',
-	A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Main$decodeOEmbed),
+	A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Post$decodeOEmbed),
 	_elm_lang$core$Maybe$Nothing,
 	A4(
 		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
 		'reddit_video',
-		A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Main$decodeRedditVideo),
+		A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Post$decodeRedditVideo),
 		_elm_lang$core$Maybe$Nothing,
-		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$Media)));
-var _user$project$Main$decodePost = A3(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$Media)));
+var _user$project$Post$decodePost = A3(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
 	'data',
 	A4(
 		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
 		'media',
-		A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Main$decodeMedia),
+		A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Post$decodeMedia),
 		_elm_lang$core$Maybe$Nothing,
 		A3(
 			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
@@ -9492,55 +9644,96 @@ var _user$project$Main$decodePost = A3(
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
 						'author',
 						_elm_lang$core$Json_Decode$string,
-						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$Post)))))),
-	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$identity));
-var _user$project$Main$decodeRP = A3(
+						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$Post)))))),
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$identity));
+var _user$project$Post$decodeRP = A3(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
 	'data',
 	A3(
 		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
 		'children',
-		_elm_lang$core$Json_Decode$list(_user$project$Main$decodePost),
-		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$SearchResponseBody)),
-	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$identity));
-var _user$project$Main$get = _lukewestby$elm_http_builder$HttpBuilder$toRequest(
-	A2(
-		_lukewestby$elm_http_builder$HttpBuilder$withExpect,
-		_elm_lang$http$Http$expectJson(_user$project$Main$decodeRP),
-		_lukewestby$elm_http_builder$HttpBuilder$get('https://www.reddit.com/r/compsci/search.json?q=senpai')));
+		_elm_lang$core$Json_Decode$list(_user$project$Post$decodePost),
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$SearchResponseBody)),
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$identity));
+var _user$project$Post$search = function (search) {
+	return _lukewestby$elm_http_builder$HttpBuilder$toRequest(
+		A2(
+			_lukewestby$elm_http_builder$HttpBuilder$withExpect,
+			_elm_lang$http$Http$expectJson(_user$project$Post$decodeRP),
+			_lukewestby$elm_http_builder$HttpBuilder$get(
+				A2(_elm_lang$core$Basics_ops['++'], 'https://www.reddit.com/r/compsci/search.json?q=', search))));
+};
+
+var _user$project$Main$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$none;
+};
+var _user$project$Main$onBlur_ = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'blur',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+};
+var _user$project$Main$Model = F3(
+	function (a, b, c) {
+		return {posts: a, log: b, searchFilter: c};
+	});
+var _user$project$Main$init = {
+	ctor: '_Tuple2',
+	_0: A3(
+		_user$project$Main$Model,
+		{ctor: '[]'},
+		'Initialised',
+		'senpai'),
+	_1: _elm_lang$core$Platform_Cmd$none
+};
+var _user$project$Main$UpdateSearchFilter = function (a) {
+	return {ctor: 'UpdateSearchFilter', _0: a};
+};
 var _user$project$Main$GetPosts = function (a) {
 	return {ctor: 'GetPosts', _0: a};
 };
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var httpget = A2(_elm_lang$http$Http$send, _user$project$Main$GetPosts, _user$project$Main$get);
-		var _p3 = msg;
-		if (_p3.ctor === 'BtnPress') {
-			return {ctor: '_Tuple2', _0: model, _1: httpget};
-		} else {
-			if (_p3._0.ctor === 'Ok') {
-				var _p4 = _p3._0._0;
+		var httpget = A2(
+			_elm_lang$http$Http$send,
+			_user$project$Main$GetPosts,
+			_user$project$Post$search(model.searchFilter));
+		var _p0 = msg;
+		switch (_p0.ctor) {
+			case 'BtnPress':
+				return {ctor: '_Tuple2', _0: model, _1: httpget};
+			case 'GetPosts':
+				if (_p0._0.ctor === 'Ok') {
+					var _p1 = _p0._0._0;
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								posts: _p1.posts,
+								log: _elm_lang$core$Basics$toString(_p1)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								log: _elm_lang$core$Basics$toString(_p0._0._0)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				}
+			default:
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{
-							posts: _p4.posts,
-							log: _elm_lang$core$Basics$toString(_p4)
-						}),
+						{searchFilter: _p0._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
-			} else {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							log: _elm_lang$core$Basics$toString(_p3._0._0)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			}
 		}
 	});
 var _user$project$Main$BtnPress = {ctor: 'BtnPress'};
@@ -9569,25 +9762,44 @@ var _user$project$Main$view = function (model) {
 			_1: {
 				ctor: '::',
 				_0: A2(
-					_elm_lang$html$Html$br,
-					{ctor: '[]'},
+					_elm_lang$html$Html$input,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$type_('text'),
+						_1: {
+							ctor: '::',
+							_0: _user$project$Main$onBlur_(_user$project$Main$UpdateSearchFilter),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$defaultValue(model.searchFilter),
+								_1: {ctor: '[]'}
+							}
+						}
+					},
 					{ctor: '[]'}),
 				_1: {
 					ctor: '::',
 					_0: A2(
-						_elm_lang$html$Html$div,
+						_elm_lang$html$Html$br,
 						{ctor: '[]'},
-						A2(_elm_lang$core$List$map, _user$project$Main$viewPost, model.posts)),
+						{ctor: '[]'}),
 					_1: {
 						ctor: '::',
 						_0: A2(
-							_elm_lang$html$Html$br,
+							_elm_lang$html$Html$div,
 							{ctor: '[]'},
-							{ctor: '[]'}),
+							A2(_elm_lang$core$List$map, _user$project$Post$viewPost, model.posts)),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html$text(model.log),
-							_1: {ctor: '[]'}
+							_0: A2(
+								_elm_lang$html$Html$br,
+								{ctor: '[]'},
+								{ctor: '[]'}),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(model.log),
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				}
