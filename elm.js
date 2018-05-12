@@ -9433,26 +9433,66 @@ var _user$project$Main$init = {
 var _user$project$Main$SearchResponseBody = function (a) {
 	return {posts: a};
 };
-var _user$project$Main$Post = F3(
-	function (a, b, c) {
-		return {author: a, title: b, url: c};
+var _user$project$Main$Post = F5(
+	function (a, b, c, d, e) {
+		return {author: a, title: b, url: c, isVideo: d, media: e};
 	});
+var _user$project$Main$Media = F2(
+	function (a, b) {
+		return {redditVideo: a, oembed: b};
+	});
+var _user$project$Main$RedditVideo = function (a) {
+	return {dashUrl: a};
+};
+var _user$project$Main$decodeRedditVideo = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'dash_url',
+	_elm_lang$core$Json_Decode$string,
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$RedditVideo));
+var _user$project$Main$OEmbed = function (a) {
+	return {title: a};
+};
+var _user$project$Main$decodeOEmbed = A3(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+	'title',
+	_elm_lang$core$Json_Decode$string,
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$OEmbed));
+var _user$project$Main$decodeMedia = A4(
+	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
+	'oembed',
+	A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Main$decodeOEmbed),
+	_elm_lang$core$Maybe$Nothing,
+	A4(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
+		'reddit_video',
+		A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Main$decodeRedditVideo),
+		_elm_lang$core$Maybe$Nothing,
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$Media)));
 var _user$project$Main$decodePost = A3(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
 	'data',
-	A3(
-		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-		'url',
-		_elm_lang$core$Json_Decode$string,
+	A4(
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$optional,
+		'media',
+		A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _user$project$Main$decodeMedia),
+		_elm_lang$core$Maybe$Nothing,
 		A3(
 			_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-			'title',
-			_elm_lang$core$Json_Decode$string,
+			'is_video',
+			_elm_lang$core$Json_Decode$bool,
 			A3(
 				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-				'author',
+				'url',
 				_elm_lang$core$Json_Decode$string,
-				_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$Post)))),
+				A3(
+					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+					'title',
+					_elm_lang$core$Json_Decode$string,
+					A3(
+						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+						'author',
+						_elm_lang$core$Json_Decode$string,
+						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$Post)))))),
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Main$identity));
 var _user$project$Main$decodeRP = A3(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
@@ -9467,7 +9507,7 @@ var _user$project$Main$get = _lukewestby$elm_http_builder$HttpBuilder$toRequest(
 	A2(
 		_lukewestby$elm_http_builder$HttpBuilder$withExpect,
 		_elm_lang$http$Http$expectJson(_user$project$Main$decodeRP),
-		_lukewestby$elm_http_builder$HttpBuilder$get('https://www.reddit.com/r/compsci/search.json?q=pussy')));
+		_lukewestby$elm_http_builder$HttpBuilder$get('https://www.reddit.com/r/compsci/search.json?q=senpai')));
 var _user$project$Main$GetPosts = function (a) {
 	return {ctor: 'GetPosts', _0: a};
 };
@@ -9479,11 +9519,15 @@ var _user$project$Main$update = F2(
 			return {ctor: '_Tuple2', _0: model, _1: httpget};
 		} else {
 			if (_p3._0.ctor === 'Ok') {
+				var _p4 = _p3._0._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{posts: _p3._0._0.posts}),
+						{
+							posts: _p4.posts,
+							log: _elm_lang$core$Basics$toString(_p4)
+						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			} else {

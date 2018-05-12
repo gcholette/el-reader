@@ -24,11 +24,25 @@ type alias SearchResponseBody =
     { posts : List Post
     }
 
-
 type alias Post =
     { author : String
     , title : String
     , url : String
+    , isVideo : Bool
+    , media : Maybe Media -- Maybe Media
+    }
+
+type alias Media =
+    { redditVideo : Maybe RedditVideo
+    , oembed : Maybe OEmbed
+    }
+
+type alias RedditVideo =
+    { dashUrl : String
+    }
+
+type alias OEmbed =
+    { title : String
     }
 
 
@@ -54,12 +68,32 @@ decodePost =
                 |> DP.required "author" Decode.string
                 |> DP.required "title" Decode.string
                 |> DP.required "url" Decode.string
+                |> DP.required "is_video" Decode.bool
+                |> DP.optional "media" (Decode.map Just decodeMedia) Nothing --decodeMedia Nothing
             )
+
+decodeMedia : Decoder Media
+decodeMedia =
+    decode Media
+        |> DP.optional "reddit_video" (Decode.map Just decodeRedditVideo) Nothing
+        |> DP.optional "oembed" (Decode.map Just decodeOEmbed) Nothing
+
+
+decodeRedditVideo : Decoder RedditVideo
+decodeRedditVideo =
+    decode RedditVideo
+        |> DP.required "dash_url" Decode.string
+
+
+decodeOEmbed : Decoder OEmbed
+decodeOEmbed =
+    decode OEmbed
+        |> DP.required "title" Decode.string
 
 
 get : Http.Request SearchResponseBody
 get =
-    "https://www.reddit.com/r/compsci/search.json?q=pussy"
+    "https://www.reddit.com/r/compsci/search.json?q=senpai"
         |> HttpBuilder.get
         |> withExpect (Http.expectJson decodeRP)
         |> HttpBuilder.toRequest
@@ -121,7 +155,9 @@ update msg model =
                 ( model, httpget )
 
             GetPosts (Ok content) ->
-                ( { model | posts = content.posts }, Cmd.none )
+                ( { model | posts = content.posts
+                          , log = toString content 
+                  }, Cmd.none )
 
             GetPosts (Err err) ->
                 ( { model | log = toString err }, Cmd.none )
