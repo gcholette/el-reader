@@ -2,8 +2,9 @@ module Post exposing (..)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (decode, required, optional, custom)
-import Html exposing (Html, text, div, button, p, a, img)
+import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Http exposing (..)
 import HttpBuilder exposing (..)
 import Regex exposing (contains, regex)
@@ -17,6 +18,8 @@ type alias SearchResponseBody =
 type alias Post =
     { author : String
     , title : String
+    , selfText : String
+    , subreddit : String
     , url : String
     , isVideo : Bool
     , media : Maybe Media
@@ -61,6 +64,8 @@ decodePost =
             (decode Post
                 |> DP.required "author" Decode.string
                 |> DP.required "title" Decode.string
+                |> DP.required "selftext" Decode.string
+                |> DP.required "subreddit_name_prefixed" Decode.string
                 |> DP.required "url" Decode.string
                 |> DP.required "is_video" Decode.bool
                 |> DP.optional "media" (Decode.map Just decodeMedia) Nothing
@@ -96,40 +101,55 @@ search search =
         |> withExpect (Http.expectJson decodeRP)
         |> HttpBuilder.toRequest
 
+
+fileExtension : String -> Maybe String
+fileExtension url =
+    String.split "." url
+        |> List.reverse
+        |> List.head
+
+
 viewPost : Post -> Html msg
 viewPost post =
     div [ class "post" ]
         [ viewMedia post
-        , p []
-            [ text post.author ]
-        , p []
-            [ text post.title ]
-        , p []
-            [ a [ href post.url ]
-                [ text post.url ]
-            ]
+        , viewBody post
         ]
 
+
+onBlur_ : (String -> msg) -> Html.Attribute msg
+onBlur_ tagger =
+    on "blur" (Decode.map tagger targetValue)
 
 viewMedia : Post -> Html msg
 viewMedia { url, isVideo, media } =
     let
-        extension =
-            String.split "." url
-                |> List.reverse
-                |> List.head
-
         isImage =
-            case extension of
+            case (fileExtension url) of
                 Just str ->
-                    contains (regex "(gif$)|(png)|(jpg)") str
+                    contains (regex "(^gif$)|(^png$)|(^jpg$)") str
 
                 Nothing ->
                     False
     in
         case isImage of
             True ->
-                img [ src url, width 120 ] []
+                div [ class "post-preview" ]
+                    [ img [ src url, class "thumbnail" ] [] ]
 
             False ->
                 div [] []
+
+
+viewBody : Post -> Html msg
+viewBody { author, title, selfText, url, subreddit } =
+    div [ class "post-body" ]
+        [ div [ class "post-title" ] [ text title ]
+        , div [ class "post-author" ] [ text author ]
+        , div [ class "post-subreddit" ] [ text subreddit ]
+        , div [ ] [ iframe [src url] [] ]
+        , if (selfText /= "") then
+            (div [ class "post-selfText" ] [ text selfText ])
+          else
+            div [] []
+        ]

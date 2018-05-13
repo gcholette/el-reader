@@ -62,8 +62,6 @@ onBlur_ : (String -> msg) -> Html.Attribute msg
 onBlur_ tagger =
     on "blur" (Decode.map tagger targetValue)
 
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let

@@ -9478,37 +9478,149 @@ var _lukewestby$elm_http_builder$HttpBuilder$RequestBuilder = F9(
 		return {method: a, headers: b, url: c, body: d, expect: e, timeout: f, withCredentials: g, queryParams: h, cacheBuster: i};
 	});
 
-var _user$project$Post$viewMedia = function (_p0) {
+var _user$project$Post$viewBody = function (_p0) {
 	var _p1 = _p0;
-	var _p4 = _p1.url;
-	var extension = _elm_lang$core$List$head(
+	var _p2 = _p1.selfText;
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('post-body'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$div,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('post-title'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(_p1.title),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('post-author'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(_p1.author),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('post-subreddit'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(_p1.subreddit),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$iframe,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$src(_p1.url),
+										_1: {ctor: '[]'}
+									},
+									{ctor: '[]'}),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: (!_elm_lang$core$Native_Utils.eq(_p2, '')) ? A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('post-selfText'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(_p2),
+									_1: {ctor: '[]'}
+								}) : A2(
+								_elm_lang$html$Html$div,
+								{ctor: '[]'},
+								{ctor: '[]'}),
+							_1: {ctor: '[]'}
+						}
+					}
+				}
+			}
+		});
+};
+var _user$project$Post$onBlur_ = function (tagger) {
+	return A2(
+		_elm_lang$html$Html_Events$on,
+		'blur',
+		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
+};
+var _user$project$Post$fileExtension = function (url) {
+	return _elm_lang$core$List$head(
 		_elm_lang$core$List$reverse(
-			A2(_elm_lang$core$String$split, '.', _p4)));
+			A2(_elm_lang$core$String$split, '.', url)));
+};
+var _user$project$Post$viewMedia = function (_p3) {
+	var _p4 = _p3;
+	var _p7 = _p4.url;
 	var isImage = function () {
-		var _p2 = extension;
-		if (_p2.ctor === 'Just') {
+		var _p5 = _user$project$Post$fileExtension(_p7);
+		if (_p5.ctor === 'Just') {
 			return A2(
 				_elm_lang$core$Regex$contains,
-				_elm_lang$core$Regex$regex('(gif$)|(png)|(jpg)'),
-				_p2._0);
+				_elm_lang$core$Regex$regex('(^gif$)|(^png$)|(^jpg$)'),
+				_p5._0);
 		} else {
 			return false;
 		}
 	}();
-	var _p3 = isImage;
-	if (_p3 === true) {
+	var _p6 = isImage;
+	if (_p6 === true) {
 		return A2(
-			_elm_lang$html$Html$img,
+			_elm_lang$html$Html$div,
 			{
 				ctor: '::',
-				_0: _elm_lang$html$Html_Attributes$src(_p4),
-				_1: {
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$width(120),
-					_1: {ctor: '[]'}
-				}
+				_0: _elm_lang$html$Html_Attributes$class('post-preview'),
+				_1: {ctor: '[]'}
 			},
-			{ctor: '[]'});
+			{
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$img,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$src(_p7),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('thumbnail'),
+							_1: {ctor: '[]'}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			});
 	} else {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -9529,48 +9641,8 @@ var _user$project$Post$viewPost = function (post) {
 			_0: _user$project$Post$viewMedia(post),
 			_1: {
 				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$p,
-					{ctor: '[]'},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text(post.author),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$p,
-						{ctor: '[]'},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text(post.title),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$p,
-							{ctor: '[]'},
-							{
-								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$a,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$href(post.url),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(post.url),
-										_1: {ctor: '[]'}
-									}),
-								_1: {ctor: '[]'}
-							}),
-						_1: {ctor: '[]'}
-					}
-				}
+				_0: _user$project$Post$viewBody(post),
+				_1: {ctor: '[]'}
 			}
 		});
 };
@@ -9580,9 +9652,9 @@ var _user$project$Post$identity = function (x) {
 var _user$project$Post$SearchResponseBody = function (a) {
 	return {posts: a};
 };
-var _user$project$Post$Post = F5(
-	function (a, b, c, d, e) {
-		return {author: a, title: b, url: c, isVideo: d, media: e};
+var _user$project$Post$Post = F7(
+	function (a, b, c, d, e, f, g) {
+		return {author: a, title: b, selfText: c, subreddit: d, url: e, isVideo: f, media: g};
 	});
 var _user$project$Post$Media = F2(
 	function (a, b) {
@@ -9638,13 +9710,21 @@ var _user$project$Post$decodePost = A3(
 				_elm_lang$core$Json_Decode$string,
 				A3(
 					_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-					'title',
+					'subreddit_name_prefixed',
 					_elm_lang$core$Json_Decode$string,
 					A3(
 						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
-						'author',
+						'selftext',
 						_elm_lang$core$Json_Decode$string,
-						_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$Post)))))),
+						A3(
+							_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+							'title',
+							_elm_lang$core$Json_Decode$string,
+							A3(
+								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
+								'author',
+								_elm_lang$core$Json_Decode$string,
+								_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$Post)))))))),
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Post$identity));
 var _user$project$Post$decodeRP = A3(
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,

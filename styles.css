@@ -1,9 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Ubuntu+Mono');
 body {
-    background: rgb(12, 17, 22);
+    background: linear-gradient(to right, #141e30, #243b55);
     color: rgb(216, 210, 213);
     font-family: 'Ubuntu Mono', monospace;
     font-size: 19px;
+}
+
+* {
+    overflow-wrap: break-word;
 }
 
 button {
@@ -16,13 +20,76 @@ button {
 }
 
 .post {
-    background: rgb(49, 49, 53); 
+    background: rgba(125, 125, 125, 0.33);
     border-radius: 1.2em;
-    padding: 0.7em;
+    padding: 1.2em;
     margin: 0.3em;
+    display: flex;
+    flex-direction: row;
 }
 
 .btn-r {
    background: rgb(218, 34, 111);
-   box-shadow: 0px 0px 15px rgb(218, 34, 111);
+   box-shadow: 0px 0px 25px rgb(218, 34, 111);
+}
+
+.post-preview {
+    order: 0;
+    width: 25%;
+    padding-right: 1em;
+}
+
+.post-body {
+    order: 1;
+    width: 100%;
+}
+
+.thumbnail {
+    border-radius: 1em;
+    box-shadow: 0px 0px 13px #131313;
+    width: 100%;
+}
+
+.post-author {
+    color: gray;
+    font-size: 0.9em;
+}
+
+.post-title {
+    color: white;
+    font-size: 1.1em;
+}
+
+.post-description {
+    color: white;
+    font-size: 1em;
+}
+
+.post-subreddit {
+    color: gray;
+    font-size: 0.7em;
+}
+
+.post-selfText {
+    color: rgb(187, 187, 187);
+    font-size: 0.9em;
+    padding: 1em;
+    background: rgba(202, 202, 202, 0.164);
+    border-radius: 1em;
+    margin-top: 0.5em;
+}
+
+::-webkit-scrollbar {
+    background: rgba(26, 26, 26, 0.027);
+    width: 10px;
+    height: 10px;
+}
+ 
+::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+ 
+::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: rgba(167, 167, 167, 0.49);
 }
