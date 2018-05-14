@@ -16,7 +16,7 @@ type alias Model =
 
 
 type Msg
-    = BtnPress
+    = SearchPosts
     | GetPosts (Result Http.Error SearchResponseBody)
     | UpdateSearchFilter String
 
@@ -33,44 +33,52 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model [] "Initialised" "senpai", Cmd.none )
+    let
+        defaultSearch = "senpai"
+    in
+        ( Model [] "Initialised" defaultSearch, searchPosts defaultSearch)
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ button
-            [ onClick BtnPress
-            , class "btn-r"
-            ]
-            [ text "click me bitch i dare you"
-            ]
-        , Html.input
-            [ type_ "text"
-            , onBlur_ UpdateSearchFilter
-            , defaultValue model.searchFilter
-            ]
-            []
+        [ viewHeader model.searchFilter
+        , div [ class "view-body" ] (List.map viewPost model.posts)
         , Html.br [] []
-        , div [] (List.map viewPost model.posts)
-        , Html.br [] []
-        , text model.log
+        -- , text model.log
         ]
 
 
-onBlur_ : (String -> msg) -> Html.Attribute msg
-onBlur_ tagger =
-    on "blur" (Decode.map tagger targetValue)
+viewHeader : String -> Html Msg
+viewHeader searchFilter =
+    Html.form [ class "header-bar", onSubmit SearchPosts ]
+        [ Html.input
+            [ type_ "text"
+            , onChange_ UpdateSearchFilter
+            , defaultValue searchFilter
+            , class "text-area"
+            ]
+            []
+        , button
+            [ onClick SearchPosts
+            , class "btn-r fas fa-search"
+            ]
+            []
+        ]
+
+
+onChange_ : (String -> msg) -> Html.Attribute msg
+onChange_ tagger =
+    on "change" (Decode.map tagger targetValue)
+
+searchPosts searchFilter =
+    Post.search searchFilter |> Http.send GetPosts
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    let
-        httpget =
-            Post.search model.searchFilter |> Http.send GetPosts
-    in
         case msg of
-            BtnPress ->
-                ( model, httpget )
+            SearchPosts ->
+                ( model, searchPosts model.searchFilter )
 
             GetPosts (Ok content) ->
                 ( { model

@@ -4,10 +4,12 @@ body {
     color: rgb(216, 210, 213);
     font-family: 'Ubuntu Mono', monospace;
     font-size: 19px;
+    margin: 0px;
 }
 
 * {
     overflow-wrap: break-word;
+    outline:0;
 }
 
 button {
@@ -16,11 +18,39 @@ button {
    border-radius: 1em;
    border: 0px;
    color: white;
-   font-size: 20px;
+   font-size: 15px;
+   margin-left: 0.5em;
+   margin-right: 0.5em;
+}
+
+.text-area {
+    border-radius: 2em;
+    padding: 0.3em;
+    border: 0px;
+    padding-left: 0.5em;
+    box-shadow: inset 0px 0px 5px #484848;
+}
+
+#container {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-bar {
+    order: 0;
+    position: fixed;
+    background: linear-gradient(to right, rgba(20, 30, 48, 0.932), rgba(36, 59, 85, 0.932));
+    width: 100%;
+    height: 1.5em;
+    padding: 0.3em;
+}
+
+.view-body {
+    margin-top: 2.3em;
 }
 
 .post {
-    background: rgba(125, 125, 125, 0.33);
+    background: rgba(125, 125, 125, 0.24);
     border-radius: 1.2em;
     padding: 1.2em;
     margin: 0.3em;

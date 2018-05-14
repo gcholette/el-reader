@@ -9532,40 +9532,22 @@ var _user$project$Post$viewBody = function (_p0) {
 						}),
 					_1: {
 						ctor: '::',
-						_0: A2(
+						_0: (!_elm_lang$core$Native_Utils.eq(_p2, '')) ? A2(
 							_elm_lang$html$Html$div,
-							{ctor: '[]'},
 							{
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$iframe,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$src(_p1.url),
-										_1: {ctor: '[]'}
-									},
-									{ctor: '[]'}),
+								_0: _elm_lang$html$Html_Attributes$class('post-selfText'),
 								_1: {ctor: '[]'}
-							}),
-						_1: {
-							ctor: '::',
-							_0: (!_elm_lang$core$Native_Utils.eq(_p2, '')) ? A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('post-selfText'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text(_p2),
-									_1: {ctor: '[]'}
-								}) : A2(
-								_elm_lang$html$Html$div,
-								{ctor: '[]'},
-								{ctor: '[]'}),
-							_1: {ctor: '[]'}
-						}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text(_p2),
+								_1: {ctor: '[]'}
+							}) : A2(
+							_elm_lang$html$Html$div,
+							{ctor: '[]'},
+							{ctor: '[]'}),
+						_1: {ctor: '[]'}
 					}
 				}
 			}
@@ -9747,41 +9729,50 @@ var _user$project$Post$search = function (search) {
 var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
-var _user$project$Main$onBlur_ = function (tagger) {
+var _user$project$Main$onChange_ = function (tagger) {
 	return A2(
 		_elm_lang$html$Html_Events$on,
-		'blur',
+		'change',
 		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
 };
 var _user$project$Main$Model = F3(
 	function (a, b, c) {
 		return {posts: a, log: b, searchFilter: c};
 	});
-var _user$project$Main$init = {
-	ctor: '_Tuple2',
-	_0: A3(
-		_user$project$Main$Model,
-		{ctor: '[]'},
-		'Initialised',
-		'senpai'),
-	_1: _elm_lang$core$Platform_Cmd$none
-};
 var _user$project$Main$UpdateSearchFilter = function (a) {
 	return {ctor: 'UpdateSearchFilter', _0: a};
 };
 var _user$project$Main$GetPosts = function (a) {
 	return {ctor: 'GetPosts', _0: a};
 };
+var _user$project$Main$searchPosts = function (searchFilter) {
+	return A2(
+		_elm_lang$http$Http$send,
+		_user$project$Main$GetPosts,
+		_user$project$Post$search(searchFilter));
+};
+var _user$project$Main$init = function () {
+	var defaultSearch = 'senpai';
+	return {
+		ctor: '_Tuple2',
+		_0: A3(
+			_user$project$Main$Model,
+			{ctor: '[]'},
+			'Initialised',
+			defaultSearch),
+		_1: _user$project$Main$searchPosts(defaultSearch)
+	};
+}();
 var _user$project$Main$update = F2(
 	function (msg, model) {
-		var httpget = A2(
-			_elm_lang$http$Http$send,
-			_user$project$Main$GetPosts,
-			_user$project$Post$search(model.searchFilter));
 		var _p0 = msg;
 		switch (_p0.ctor) {
-			case 'BtnPress':
-				return {ctor: '_Tuple2', _0: model, _1: httpget};
+			case 'SearchPosts':
+				return {
+					ctor: '_Tuple2',
+					_0: model,
+					_1: _user$project$Main$searchPosts(model.searchFilter)
+				};
 			case 'GetPosts':
 				if (_p0._0.ctor === 'Ok') {
 					var _p1 = _p0._0._0;
@@ -9816,72 +9807,83 @@ var _user$project$Main$update = F2(
 				};
 		}
 	});
-var _user$project$Main$BtnPress = {ctor: 'BtnPress'};
+var _user$project$Main$SearchPosts = {ctor: 'SearchPosts'};
+var _user$project$Main$viewHeader = function (searchFilter) {
+	return A2(
+		_elm_lang$html$Html$form,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('header-bar'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onSubmit(_user$project$Main$SearchPosts),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$type_('text'),
+					_1: {
+						ctor: '::',
+						_0: _user$project$Main$onChange_(_user$project$Main$UpdateSearchFilter),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$defaultValue(searchFilter),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('text-area'),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$button,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$SearchPosts),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('btn-r fas fa-search'),
+							_1: {ctor: '[]'}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
 var _user$project$Main$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$button,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onClick(_user$project$Main$BtnPress),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('btn-r'),
-						_1: {ctor: '[]'}
-					}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('click me bitch i dare you'),
-					_1: {ctor: '[]'}
-				}),
+			_0: _user$project$Main$viewHeader(model.searchFilter),
 			_1: {
 				ctor: '::',
 				_0: A2(
-					_elm_lang$html$Html$input,
+					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$type_('text'),
-						_1: {
-							ctor: '::',
-							_0: _user$project$Main$onBlur_(_user$project$Main$UpdateSearchFilter),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$defaultValue(model.searchFilter),
-								_1: {ctor: '[]'}
-							}
-						}
+						_0: _elm_lang$html$Html_Attributes$class('view-body'),
+						_1: {ctor: '[]'}
 					},
-					{ctor: '[]'}),
+					A2(_elm_lang$core$List$map, _user$project$Post$viewPost, model.posts)),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$br,
 						{ctor: '[]'},
 						{ctor: '[]'}),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{ctor: '[]'},
-							A2(_elm_lang$core$List$map, _user$project$Post$viewPost, model.posts)),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$br,
-								{ctor: '[]'},
-								{ctor: '[]'}),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html$text(model.log),
-								_1: {ctor: '[]'}
-							}
-						}
-					}
+					_1: {ctor: '[]'}
 				}
 			}
 		});

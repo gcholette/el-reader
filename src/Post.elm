@@ -147,7 +147,6 @@ viewBody { author, title, selfText, url, subreddit } =
         [ div [ class "post-title" ] [ text title ]
         , div [ class "post-author" ] [ text author ]
         , div [ class "post-subreddit" ] [ text subreddit ]
-        , div [ ] [ iframe [src url] [] ]
         , if (selfText /= "") then
             (div [ class "post-selfText" ] [ text selfText ])
           else
