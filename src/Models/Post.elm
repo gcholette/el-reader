@@ -1,4 +1,4 @@
-module Post exposing (..)
+module Models.Post exposing (..)
 
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (decode, required, optional, custom)
@@ -120,6 +120,7 @@ viewPost post =
 onBlur_ : (String -> msg) -> Html.Attribute msg
 onBlur_ tagger =
     on "blur" (Decode.map tagger targetValue)
+
 
 viewMedia : Post -> Html msg
 viewMedia { url, isVideo, media } =

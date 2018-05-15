@@ -2,28 +2,31 @@ module Main exposing (..)
 
 import Html exposing (Html, text, div, button, p, a, img)
 import Html.Events exposing (..)
-import Html.Attributes exposing (..)
-import Http exposing (..)
+import Navigation exposing (Location, programWithFlags)
 import Json.Decode as Decode exposing (Decoder)
-import Post exposing (..)
+import Route exposing (Route)
+import Task
+import Pages.Feed as FeedPage exposing (..)
 
 
 type alias Model =
-    { posts : List Post
-    , log : String
-    , searchFilter : String
+    { activePage : Page
     }
 
 
+type Page
+    = Root
+    | Feed FeedPage.Model
+
+
 type Msg
-    = SearchPosts
-    | GetPosts (Result Http.Error SearchResponseBody)
-    | UpdateSearchFilter String
+    = SetRoute (Maybe Route)
+    | FeedMsg FeedPage.Msg
 
 
-main : Program Never Model Msg
+main : Program Decode.Value Model Msg
 main =
-    Html.program
+    programWithFlags (Route.fromLocation >> SetRoute)
         { init = init
         , view = view
         , update = update
@@ -31,68 +34,69 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
-    let
-        defaultSearch = "senpai"
-    in
-        ( Model [] "Initialised" defaultSearch, searchPosts defaultSearch)
-
-
 view : Model -> Html Msg
 view model =
-    div []
-        [ viewHeader model.searchFilter
-        , div [ class "view-body" ] (List.map viewPost model.posts)
-        , Html.br [] []
-        -- , text model.log
-        ]
+    case model.activePage of
+        Root ->
+            a [ (Route.href Route.Feed) ] [ text "come it's fun here" ]
+
+        Feed submodel ->
+            FeedPage.view submodel
+                |> Html.map FeedMsg
 
 
-viewHeader : String -> Html Msg
-viewHeader searchFilter =
-    Html.form [ class "header-bar", onSubmit SearchPosts ]
-        [ Html.input
-            [ type_ "text"
-            , onChange_ UpdateSearchFilter
-            , defaultValue searchFilter
-            , class "text-area"
-            ]
-            []
-        , button
-            [ onClick SearchPosts
-            , class "btn-r fas fa-search"
-            ]
-            []
-        ]
+init : Decode.Value -> Location -> ( Model, Cmd Msg )
+init val location =
+    let
+        initialModel =
+            Model Root
+
+        --(Feed FeedPage.initialModel)
+    in
+        setRoute (Route.fromLocation location) initialModel
 
 
-onChange_ : (String -> msg) -> Html.Attribute msg
-onChange_ tagger =
-    on "change" (Decode.map tagger targetValue)
+setRoute : Maybe Route -> Model -> ( Model, Cmd Msg )
+setRoute route model =
+    case route of
+        Nothing ->
+            ( model, Cmd.none )
 
-searchPosts searchFilter =
-    Post.search searchFilter |> Http.send GetPosts
+        Just Route.Root ->
+            ( { model | activePage = Root }, Cmd.none )
+
+        Just Route.Feed ->
+            ( { model | activePage = Feed FeedPage.initialModel }, Cmd.none )
+
+
+
+--Task.attempt FeedMsg FeedPage.init)
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-        case msg of
-            SearchPosts ->
-                ( model, searchPosts model.searchFilter )
+    updatePage model.activePage msg model
 
-            GetPosts (Ok content) ->
-                ( { model
-                    | posts = content.posts
-                    , log = toString content
-                  }
-                , Cmd.none
-                )
 
-            GetPosts (Err err) ->
-                ( { model | log = toString err }, Cmd.none )
+updatePage : Page -> Msg -> Model -> ( Model, Cmd Msg )
+updatePage page msg model =
+    let
+        toPage toModel toMsg subUpdate subMsg subModel =
+            let
+                ( newModel, newCmd ) =
+                    subUpdate subMsg subModel
+            in
+                ( { model | activePage = (toModel newModel) }, Cmd.map toMsg newCmd )
+    in
+        case ( msg, page ) of
+            ( SetRoute route, _ ) ->
+                setRoute route model
 
-            UpdateSearchFilter searchFilter ->
-                ( { model | searchFilter = searchFilter }, Cmd.none )
+            ( FeedMsg subMsg, Feed subModel ) ->
+                toPage Feed FeedMsg (FeedPage.update) subMsg subModel
+
+            ( _, _ ) ->
+                ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
