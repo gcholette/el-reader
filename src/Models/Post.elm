@@ -43,6 +43,80 @@ type alias OEmbed =
     }
 
 
+
+search : String -> Http.Request SearchResponseBody
+search search =
+    "https://www.reddit.com/r/compsci/search.json?q="
+        ++ search
+        |> HttpBuilder.get
+        |> withExpect (Http.expectJson decodeRP)
+        |> HttpBuilder.toRequest
+
+query : String -> Http.Request SearchResponseBody
+query url =
+    url
+        |> HttpBuilder.get
+        |> withExpect (Http.expectJson decodeRP)
+        |> HttpBuilder.toRequest
+
+
+fileExtension : String -> Maybe String
+fileExtension url =
+    String.split "." url
+        |> List.reverse
+        |> List.head
+
+
+-- Views
+
+viewPost : Post -> Html msg
+viewPost post =
+    div [ class "post" ]
+        [ viewMedia post
+        , viewBody post
+        ]
+
+
+onBlur_ : (String -> msg) -> Html.Attribute msg
+onBlur_ tagger =
+    on "blur" (Decode.map tagger targetValue)
+
+
+viewMedia : Post -> Html msg
+viewMedia { url, isVideo, media } =
+    let
+        isImage =
+            case (fileExtension url) of
+                Just str ->
+                    contains (regex "(^gif$)|(^png$)|(^jpg$)") str
+
+                Nothing ->
+                    False
+    in
+        case isImage of
+            True ->
+                div [ class "post-preview" ]
+                    [ img [ src url, class "thumbnail" ] [] ]
+
+            False ->
+                div [] []
+
+
+viewBody : Post -> Html msg
+viewBody { author, title, selfText, url, subreddit } =
+    div [ class "post-body" ]
+        [ div [ class "post-title" ] [ text title ]
+        , div [ class "post-author" ] [ text author ]
+        , div [ class "post-subreddit" ] [ text subreddit ]
+        , if (selfText /= "") then
+            (div [ class "post-selfText" ] [ text selfText ])
+          else
+            div [] []
+        ]
+
+
+-- Json Decoders
+
 identity : a -> a
 identity =
     (\x -> x)
@@ -92,64 +166,3 @@ decodeOEmbed =
         |> DP.required "title" Decode.string
         |> DP.required "thumbnail_url" Decode.string
 
-
-search : String -> Http.Request SearchResponseBody
-search search =
-    "https://www.reddit.com/r/compsci/search.json?q="
-        ++ search
-        |> HttpBuilder.get
-        |> withExpect (Http.expectJson decodeRP)
-        |> HttpBuilder.toRequest
-
-
-fileExtension : String -> Maybe String
-fileExtension url =
-    String.split "." url
-        |> List.reverse
-        |> List.head
-
-
-viewPost : Post -> Html msg
-viewPost post =
-    div [ class "post" ]
-        [ viewMedia post
-        , viewBody post
-        ]
-
-
-onBlur_ : (String -> msg) -> Html.Attribute msg
-onBlur_ tagger =
-    on "blur" (Decode.map tagger targetValue)
-
-
-viewMedia : Post -> Html msg
-viewMedia { url, isVideo, media } =
-    let
-        isImage =
-            case (fileExtension url) of
-                Just str ->
-                    contains (regex "(^gif$)|(^png$)|(^jpg$)") str
-
-                Nothing ->
-                    False
-    in
-        case isImage of
-            True ->
-                div [ class "post-preview" ]
-                    [ img [ src url, class "thumbnail" ] [] ]
-
-            False ->
-                div [] []
-
-
-viewBody : Post -> Html msg
-viewBody { author, title, selfText, url, subreddit } =
-    div [ class "post-body" ]
-        [ div [ class "post-title" ] [ text title ]
-        , div [ class "post-author" ] [ text author ]
-        , div [ class "post-subreddit" ] [ text subreddit ]
-        , if (selfText /= "") then
-            (div [ class "post-selfText" ] [ text selfText ])
-          else
-            div [] []
-        ]

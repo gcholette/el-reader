@@ -10373,6 +10373,9 @@ var _user$project$Route$fromLocation = function (location) {
 	return _elm_lang$core$String$isEmpty(location.hash) ? _elm_lang$core$Maybe$Just(_user$project$Route$Root) : A2(_evancz$url_parser$UrlParser$parseHash, _user$project$Route$route, location);
 };
 
+var _user$project$Models_Post$identity = function (x) {
+	return x;
+};
 var _user$project$Models_Post$viewBody = function (_p0) {
 	var _p1 = _p0;
 	var _p2 = _p1.selfText;
@@ -10523,9 +10526,6 @@ var _user$project$Models_Post$viewPost = function (post) {
 			}
 		});
 };
-var _user$project$Models_Post$identity = function (x) {
-	return x;
-};
 var _user$project$Models_Post$SearchResponseBody = function (a) {
 	return {posts: a};
 };
@@ -10618,7 +10618,7 @@ var _user$project$Models_Post$search = function (search) {
 			_lukewestby$elm_http_builder$HttpBuilder$withExpect,
 			_elm_lang$http$Http$expectJson(_user$project$Models_Post$decodeRP),
 			_lukewestby$elm_http_builder$HttpBuilder$get(
-				A2(_elm_lang$core$Basics_ops['++'], 'https://www.reddit.com/r/compsci/search.json?q=', search))));
+				A2(_elm_lang$core$Basics_ops['++'], 'https://www.reddit.com/r/gonewild/search.json?q=', search))));
 };
 
 var _user$project$Pages_Feed$onChange_ = function (tagger) {
