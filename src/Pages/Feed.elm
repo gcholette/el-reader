@@ -18,39 +18,44 @@ type alias Model =
 
 type Msg
     = SearchPosts
-    | GetPosts (Result Http.Error SearchResponseBody)
+    | GetPosts (Result Http.Error (List Post))
     | UpdateSearchFilter String
+
+
+defaultSearch : String
+defaultSearch =
+    "compsci"
 
 
 initialModel : Model
 initialModel =
+    Model "Initialised" defaultSearch []
+
+
+init : Task Http.Error Model
+init =
     let
-        defaultSearch =
-            "senpai"
+        searchTask searchFilter =
+            Post.search searchFilter |> Http.toTask
     in
-        Model "Initialised" defaultSearch []
-
-
-
-{-
-   init : Task Http.Error Model
-   init =
-       let
-           searchTask searchFilter =
-               Post.search searchFilter |> Http.toTask
-       in
-           Task.map (Model "" "") (searchTask "hey")
--}
+        Task.map (Model "init" defaultSearch) (searchTask defaultSearch)
 
 
 view : Model -> Html Msg
 view model =
-    div []
+    div [ class "container" ]
         [ viewHeader model.searchFilter
-        , div [ class "view-body" ] (List.map viewPost model.posts)
-        , Html.br [] []
-
-        -- , text model.log
+        , div [ class "content-flex" ]
+            [ viewSidebar
+            , div [ class "content" ] (List.map viewPost model.posts)
+            ]
+        ]
+    
+viewSidebar : Html Msg
+viewSidebar =
+    div [ class "sidebar" ] 
+        [ Html.span [ class "fas fa-space-shuttle icon" ] [] 
+        , Html.span [ class "fas fa-code-branch icon" ] [] 
         ]
 
 
@@ -81,26 +86,26 @@ onChange_ tagger =
     on "change" (Decode.map tagger targetValue)
 
 
-searchPosts searchFilter =
-    Post.search searchFilter |> Http.send GetPosts
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        SearchPosts ->
-            ( model, searchPosts model.searchFilter )
+    let
+        searchPosts =
+            Post.search model.searchFilter |> Http.send GetPosts
+    in
+        case msg of
+            SearchPosts ->
+                ( model, searchPosts )
 
-        GetPosts (Ok content) ->
-            ( { model
-                | posts = content.posts
-                , log = toString content
-              }
-            , Cmd.none
-            )
+            GetPosts (Ok content) ->
+                ( { model
+                    | posts = content
+                    , log = toString content
+                  }
+                , Cmd.none
+                )
 
-        GetPosts (Err err) ->
-            ( { model | log = toString err }, Cmd.none )
+            GetPosts (Err err) ->
+                ( { model | log = toString err }, Cmd.none )
 
-        UpdateSearchFilter searchFilter ->
-            ( { model | searchFilter = searchFilter }, Cmd.none )
+            UpdateSearchFilter searchFilter ->
+                ( { model | searchFilter = searchFilter }, Cmd.none )

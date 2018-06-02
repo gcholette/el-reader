@@ -5,47 +5,82 @@ body {
     font-family: 'Ubuntu Mono', monospace;
     font-size: 19px;
     margin: 0px;
+    overflow: auto;
 }
 
 * {
     overflow-wrap: break-word;
     outline:0;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 button {
+   color: white;
    border-radius: 1em; 
    padding: 0.4em 0.8em 0.4em 0.8em;
    border-radius: 1em;
    border: 0px;
-   color: white;
    font-size: 15px;
    margin-left: 0.5em;
    margin-right: 0.5em;
 }
 
 .text-area {
+    box-shadow: inset 0px 0px 5px #484848;
     border-radius: 2em;
     padding: 0.3em;
     border: 0px;
     padding-left: 0.5em;
-    box-shadow: inset 0px 0px 5px #484848;
 }
 
-#container {
+.container {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+    align-items: stretch;
+}
+
+.header-bar {
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow: 0px 3px 5px rgba(23, 23, 23, 0.4);
+    order: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    height: 1.5em;
+    padding: 0.3em;
+}
+
+.header-bar .icon {
+    font-size:20px;
+}
+
+
+.content-flex {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+}
+
+.sidebar {
+    background: rgba(0, 0, 0, 0.22);
+    box-shadow: 0px 3px 5px rgba(23, 23, 23, 0.4);
+    order: 0;
+    text-align: center;
     display: flex;
     flex-direction: column;
 }
 
-.header-bar {
-    order: 0;
-    position: fixed;
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    background: linear-gradient(to right, rgba(20, 30, 48, 0.932), rgba(36, 59, 85, 0.932));
-    width: 100%;
-    height: 1.5em;
-    padding: 0.3em;
+.sidebar .icon {
+    font-size:20px;
+    padding: 0.4em;
+}
+
+.content {
+    order: 1;
+    overflow-y: auto;
+    padding: 0.5em;
 }
 
 .header-settings {
@@ -62,12 +97,9 @@ button {
     order: 2;
 }
 
-.view-body {
-    margin-top: 2.3em;
-}
-
 .post {
     background: rgba(125, 125, 125, 0.24);
+    box-shadow: 2px 2px 6px #212121;
     border-radius: 1.2em;
     padding: 1.2em;
     margin: 0.3em;
@@ -92,9 +124,9 @@ button {
 }
 
 .thumbnail {
-    border-radius: 1em;
     box-shadow: 0px 0px 13px #131313;
     width: 100%;
+    border-radius: 1em;
 }
 
 .post-author {
@@ -118,10 +150,10 @@ button {
 }
 
 .post-selfText {
+    background: rgba(202, 202, 202, 0.164);
     color: rgb(187, 187, 187);
     font-size: 0.9em;
     padding: 1em;
-    background: rgba(202, 202, 202, 0.164);
     border-radius: 1em;
     margin-top: 0.5em;
 }
@@ -137,6 +169,6 @@ button {
 }
  
 ::-webkit-scrollbar-thumb {
-    border-radius: 10px;
     background: rgba(167, 167, 167, 0.49);
+    border-radius: 10px;
 }

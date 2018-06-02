@@ -1,16 +1,17 @@
 module Main exposing (..)
 
 import Html exposing (Html, text, div, button, p, a, img)
-import Html.Events exposing (..)
 import Navigation exposing (Location, programWithFlags)
 import Json.Decode as Decode exposing (Decoder)
 import Route exposing (Route)
+import Http exposing (Error)
 import Task
 import Pages.Feed as FeedPage exposing (..)
 
 
 type alias Model =
     { activePage : Page
+    , log : String
     }
 
 
@@ -21,6 +22,7 @@ type Page
 
 type Msg
     = SetRoute (Maybe Route)
+    | FeedLoaded (Result Http.Error FeedPage.Model)
     | FeedMsg FeedPage.Msg
 
 
@@ -49,7 +51,7 @@ init : Decode.Value -> Location -> ( Model, Cmd Msg )
 init val location =
     let
         initialModel =
-            Model Root
+            Model (Feed FeedPage.initialModel) ""
 
         --(Feed FeedPage.initialModel)
     in
@@ -66,7 +68,7 @@ setRoute route model =
             ( { model | activePage = Root }, Cmd.none )
 
         Just Route.Feed ->
-            ( { model | activePage = Feed FeedPage.initialModel }, Cmd.none )
+            ( { model | activePage = Feed FeedPage.initialModel }, Task.attempt FeedLoaded FeedPage.init )
 
 
 
@@ -94,6 +96,12 @@ updatePage page msg model =
 
             ( FeedMsg subMsg, Feed subModel ) ->
                 toPage Feed FeedMsg (FeedPage.update) subMsg subModel
+
+            ( FeedLoaded (Ok subModel), _ ) ->
+                ( { model | activePage = Feed subModel }, Cmd.none )
+                
+            ( FeedLoaded (Err error), _ ) ->
+                ( { model | log = toString error}, Cmd.none )
 
             ( _, _ ) ->
                 ( model, Cmd.none )

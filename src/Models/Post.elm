@@ -10,11 +10,6 @@ import HttpBuilder exposing (..)
 import Regex exposing (contains, regex)
 
 
-type alias SearchResponseBody =
-    { posts : List Post
-    }
-
-
 type alias Post =
     { author : String
     , title : String
@@ -43,8 +38,7 @@ type alias OEmbed =
     }
 
 
-
-search : String -> Http.Request SearchResponseBody
+search : String -> Http.Request (List Post)
 search search =
     "https://www.reddit.com/r/compsci/search.json?q="
         ++ search
@@ -52,7 +46,8 @@ search search =
         |> withExpect (Http.expectJson decodeRP)
         |> HttpBuilder.toRequest
 
-query : String -> Http.Request SearchResponseBody
+
+query : String -> Http.Request (List Post)
 query url =
     url
         |> HttpBuilder.get
@@ -67,7 +62,9 @@ fileExtension url =
         |> List.head
 
 
+
 -- Views
+
 
 viewPost : Post -> Html msg
 viewPost post =
@@ -115,18 +112,20 @@ viewBody { author, title, selfText, url, subreddit } =
         ]
 
 
+
 -- Json Decoders
+
 
 identity : a -> a
 identity =
     (\x -> x)
 
 
-decodeRP : Decoder SearchResponseBody
+decodeRP : Decoder (List Post)
 decodeRP =
     decode identity
         |> DP.required "data"
-            (decode SearchResponseBody
+            (decode identity
                 |> DP.required "children" (Decode.list decodePost)
             )
 
@@ -165,4 +164,3 @@ decodeOEmbed =
     decode OEmbed
         |> DP.required "title" Decode.string
         |> DP.required "thumbnail_url" Decode.string
-

@@ -10526,9 +10526,6 @@ var _user$project$Models_Post$viewPost = function (post) {
 			}
 		});
 };
-var _user$project$Models_Post$SearchResponseBody = function (a) {
-	return {posts: a};
-};
 var _user$project$Models_Post$Post = F7(
 	function (a, b, c, d, e, f, g) {
 		return {author: a, title: b, selfText: c, subreddit: d, url: e, isVideo: f, media: g};
@@ -10610,7 +10607,7 @@ var _user$project$Models_Post$decodeRP = A3(
 		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$required,
 		'children',
 		_elm_lang$core$Json_Decode$list(_user$project$Models_Post$decodePost),
-		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Models_Post$SearchResponseBody)),
+		_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Models_Post$identity)),
 	_NoRedInk$elm_decode_pipeline$Json_Decode_Pipeline$decode(_user$project$Models_Post$identity));
 var _user$project$Models_Post$search = function (search) {
 	return _lukewestby$elm_http_builder$HttpBuilder$toRequest(
@@ -10618,7 +10615,14 @@ var _user$project$Models_Post$search = function (search) {
 			_lukewestby$elm_http_builder$HttpBuilder$withExpect,
 			_elm_lang$http$Http$expectJson(_user$project$Models_Post$decodeRP),
 			_lukewestby$elm_http_builder$HttpBuilder$get(
-				A2(_elm_lang$core$Basics_ops['++'], 'https://www.reddit.com/r/gonewild/search.json?q=', search))));
+				A2(_elm_lang$core$Basics_ops['++'], 'https://www.reddit.com/r/compsci/search.json?q=', search))));
+};
+var _user$project$Models_Post$query = function (url) {
+	return _lukewestby$elm_http_builder$HttpBuilder$toRequest(
+		A2(
+			_lukewestby$elm_http_builder$HttpBuilder$withExpect,
+			_elm_lang$http$Http$expectJson(_user$project$Models_Post$decodeRP),
+			_lukewestby$elm_http_builder$HttpBuilder$get(url)));
 };
 
 var _user$project$Pages_Feed$onChange_ = function (tagger) {
@@ -10627,17 +10631,55 @@ var _user$project$Pages_Feed$onChange_ = function (tagger) {
 		'change',
 		A2(_elm_lang$core$Json_Decode$map, tagger, _elm_lang$html$Html_Events$targetValue));
 };
+var _user$project$Pages_Feed$viewSidebar = A2(
+	_elm_lang$html$Html$div,
+	{
+		ctor: '::',
+		_0: _elm_lang$html$Html_Attributes$class('sidebar'),
+		_1: {ctor: '[]'}
+	},
+	{
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$span,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('fas fa-space-shuttle icon'),
+				_1: {ctor: '[]'}
+			},
+			{ctor: '[]'}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$span,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('fas fa-code-branch icon'),
+					_1: {ctor: '[]'}
+				},
+				{ctor: '[]'}),
+			_1: {ctor: '[]'}
+		}
+	});
+var _user$project$Pages_Feed$defaultSearch = 'gonewild';
 var _user$project$Pages_Feed$Model = F3(
 	function (a, b, c) {
 		return {log: a, searchFilter: b, posts: c};
 	});
-var _user$project$Pages_Feed$initialModel = function () {
-	var defaultSearch = 'senpai';
-	return A3(
-		_user$project$Pages_Feed$Model,
-		'Initialised',
-		defaultSearch,
-		{ctor: '[]'});
+var _user$project$Pages_Feed$initialModel = A3(
+	_user$project$Pages_Feed$Model,
+	'Initialised',
+	_user$project$Pages_Feed$defaultSearch,
+	{ctor: '[]'});
+var _user$project$Pages_Feed$init = function () {
+	var searchTask = function (searchFilter) {
+		return _elm_lang$http$Http$toTask(
+			_user$project$Models_Post$search(searchFilter));
+	};
+	return A2(
+		_elm_lang$core$Task$map,
+		A2(_user$project$Pages_Feed$Model, 'init', _user$project$Pages_Feed$defaultSearch),
+		searchTask(_user$project$Pages_Feed$defaultSearch));
 }();
 var _user$project$Pages_Feed$UpdateSearchFilter = function (a) {
 	return {ctor: 'UpdateSearchFilter', _0: a};
@@ -10645,22 +10687,16 @@ var _user$project$Pages_Feed$UpdateSearchFilter = function (a) {
 var _user$project$Pages_Feed$GetPosts = function (a) {
 	return {ctor: 'GetPosts', _0: a};
 };
-var _user$project$Pages_Feed$searchPosts = function (searchFilter) {
-	return A2(
-		_elm_lang$http$Http$send,
-		_user$project$Pages_Feed$GetPosts,
-		_user$project$Models_Post$search(searchFilter));
-};
 var _user$project$Pages_Feed$update = F2(
 	function (msg, model) {
+		var searchPosts = A2(
+			_elm_lang$http$Http$send,
+			_user$project$Pages_Feed$GetPosts,
+			_user$project$Models_Post$search(model.searchFilter));
 		var _p0 = msg;
 		switch (_p0.ctor) {
 			case 'SearchPosts':
-				return {
-					ctor: '_Tuple2',
-					_0: model,
-					_1: _user$project$Pages_Feed$searchPosts(model.searchFilter)
-				};
+				return {ctor: '_Tuple2', _0: model, _1: searchPosts};
 			case 'GetPosts':
 				if (_p0._0.ctor === 'Ok') {
 					var _p1 = _p0._0._0;
@@ -10669,7 +10705,7 @@ var _user$project$Pages_Feed$update = F2(
 						_0: _elm_lang$core$Native_Utils.update(
 							model,
 							{
-								posts: _p1.posts,
+								posts: _p1,
 								log: _elm_lang$core$Basics$toString(_p1)
 							}),
 						_1: _elm_lang$core$Platform_Cmd$none
@@ -10788,7 +10824,11 @@ var _user$project$Pages_Feed$viewHeader = function (searchFilter) {
 var _user$project$Pages_Feed$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
-		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('container'),
+			_1: {ctor: '[]'}
+		},
 		{
 			ctor: '::',
 			_0: _user$project$Pages_Feed$viewHeader(model.searchFilter),
@@ -10798,18 +10838,26 @@ var _user$project$Pages_Feed$view = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class('view-body'),
+						_0: _elm_lang$html$Html_Attributes$class('content-flex'),
 						_1: {ctor: '[]'}
 					},
-					A2(_elm_lang$core$List$map, _user$project$Models_Post$viewPost, model.posts)),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$br,
-						{ctor: '[]'},
-						{ctor: '[]'}),
-					_1: {ctor: '[]'}
-				}
+					{
+						ctor: '::',
+						_0: _user$project$Pages_Feed$viewSidebar,
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('content'),
+									_1: {ctor: '[]'}
+								},
+								A2(_elm_lang$core$List$map, _user$project$Models_Post$viewPost, model.posts)),
+							_1: {ctor: '[]'}
+						}
+					}),
+				_1: {ctor: '[]'}
 			}
 		});
 };
@@ -10817,54 +10865,20 @@ var _user$project$Pages_Feed$view = function (model) {
 var _user$project$Main$subscriptions = function (model) {
 	return _elm_lang$core$Platform_Sub$none;
 };
-var _user$project$Main$Model = function (a) {
-	return {activePage: a};
-};
+var _user$project$Main$Model = F2(
+	function (a, b) {
+		return {activePage: a, log: b};
+	});
 var _user$project$Main$Feed = function (a) {
 	return {ctor: 'Feed', _0: a};
 };
 var _user$project$Main$Root = {ctor: 'Root'};
-var _user$project$Main$setRoute = F2(
-	function (route, model) {
-		var _p0 = route;
-		if (_p0.ctor === 'Nothing') {
-			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-		} else {
-			if (_p0._0.ctor === 'Root') {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{activePage: _user$project$Main$Root}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			} else {
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							activePage: _user$project$Main$Feed(_user$project$Pages_Feed$initialModel)
-						}),
-					_1: _elm_lang$core$Platform_Cmd$none
-				};
-			}
-		}
-	});
-var _user$project$Main$init = F2(
-	function (val, location) {
-		var initialModel = _user$project$Main$Model(_user$project$Main$Root);
-		return A2(
-			_user$project$Main$setRoute,
-			_user$project$Route$fromLocation(location),
-			initialModel);
-	});
 var _user$project$Main$FeedMsg = function (a) {
 	return {ctor: 'FeedMsg', _0: a};
 };
 var _user$project$Main$view = function (model) {
-	var _p1 = model.activePage;
-	if (_p1.ctor === 'Root') {
+	var _p0 = model.activePage;
+	if (_p0.ctor === 'Root') {
 		return A2(
 			_elm_lang$html$Html$a,
 			{
@@ -10881,9 +10895,50 @@ var _user$project$Main$view = function (model) {
 		return A2(
 			_elm_lang$html$Html$map,
 			_user$project$Main$FeedMsg,
-			_user$project$Pages_Feed$view(_p1._0));
+			_user$project$Pages_Feed$view(_p0._0));
 	}
 };
+var _user$project$Main$FeedLoaded = function (a) {
+	return {ctor: 'FeedLoaded', _0: a};
+};
+var _user$project$Main$setRoute = F2(
+	function (route, model) {
+		var _p1 = route;
+		if (_p1.ctor === 'Nothing') {
+			return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+		} else {
+			if (_p1._0.ctor === 'Root') {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{activePage: _user$project$Main$Root}),
+					_1: _elm_lang$core$Platform_Cmd$none
+				};
+			} else {
+				return {
+					ctor: '_Tuple2',
+					_0: _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							activePage: _user$project$Main$Feed(_user$project$Pages_Feed$initialModel)
+						}),
+					_1: A2(_elm_lang$core$Task$attempt, _user$project$Main$FeedLoaded, _user$project$Pages_Feed$init)
+				};
+			}
+		}
+	});
+var _user$project$Main$init = F2(
+	function (val, location) {
+		var initialModel = A2(
+			_user$project$Main$Model,
+			_user$project$Main$Feed(_user$project$Pages_Feed$initialModel),
+			'');
+		return A2(
+			_user$project$Main$setRoute,
+			_user$project$Route$fromLocation(location),
+			initialModel);
+	});
 var _user$project$Main$updatePage = F3(
 	function (page, msg, model) {
 		var toPage = F5(
@@ -10902,14 +10957,37 @@ var _user$project$Main$updatePage = F3(
 				};
 			});
 		var _p3 = {ctor: '_Tuple2', _0: msg, _1: page};
-		if (_p3._0.ctor === 'SetRoute') {
-			return A2(_user$project$Main$setRoute, _p3._0._0, model);
-		} else {
-			if (_p3._1.ctor === 'Feed') {
-				return A5(toPage, _user$project$Main$Feed, _user$project$Main$FeedMsg, _user$project$Pages_Feed$update, _p3._0._0, _p3._1._0);
-			} else {
-				return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
-			}
+		switch (_p3._0.ctor) {
+			case 'SetRoute':
+				return A2(_user$project$Main$setRoute, _p3._0._0, model);
+			case 'FeedMsg':
+				if (_p3._1.ctor === 'Feed') {
+					return A5(toPage, _user$project$Main$Feed, _user$project$Main$FeedMsg, _user$project$Pages_Feed$update, _p3._0._0, _p3._1._0);
+				} else {
+					return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+				}
+			default:
+				if (_p3._0._0.ctor === 'Ok') {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								activePage: _user$project$Main$Feed(_p3._0._0._0)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				} else {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								log: _elm_lang$core$Basics$toString(_p3._0._0._0)
+							}),
+						_1: _elm_lang$core$Platform_Cmd$none
+					};
+				}
 		}
 	});
 var _user$project$Main$update = F2(
